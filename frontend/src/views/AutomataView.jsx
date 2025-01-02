@@ -66,29 +66,30 @@ export const AutomataView = ({ diagramText, editorIsActive, toggleEditor }) => {
         if (diagramText) {
             setUpdateInProgress(true);
             setTimeout(() => {
-                generateYantrixAutomata(diagramText).then(res => {
-                    setGeneratedFiles(res);
-                    console.log(res.errorText);
-                    if (res.errorText !== null) {
-                        setErrorViews(prev => ({
-                            ...prev,
-                            [ViewSelector.CODE]: true
-                        }))
-                    }
-                    else {
-                        setErrorViews(prev => ({
-                            ...prev,
-                            [ViewSelector.CODE]: false
-                        }))
-                    }
-                }).finally(_ => {
-                    setUpdateInProgress(false);
-                    setUpdatedViews({
-                        [ViewSelector.DIAGRAM]: true,
-                        [ViewSelector.CODE]: true,
-                        [activeView]: false
+                generateYantrixAutomata(diagramText)
+                    .then(res => {
+                        setGeneratedFiles(res);
+                        if (res.errorText !== null) {
+                            setErrorViews(prev => ({
+                                ...prev,
+                                [ViewSelector.CODE]: true
+                            }))
+                        }
+                        else {
+                            setErrorViews(prev => ({
+                                ...prev,
+                                [ViewSelector.CODE]: false
+                            }))
+                        }
                     })
-                })
+                    .finally(_ => {
+                        setUpdateInProgress(false);
+                        setUpdatedViews({
+                            [ViewSelector.DIAGRAM]: true,
+                            [ViewSelector.CODE]: true,
+                            [activeView]: false
+                        });
+                    });
             }, 2000);
         }
     }, [diagramText])
