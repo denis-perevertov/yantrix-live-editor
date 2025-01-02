@@ -1,0 +1,118 @@
+name: Deploy to remote server
+on: 
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+env:
+  DOCKER_BACKEND_IMAGE: temporalparadox/yantrix-editor-backend:deploy_dgocean
+  DOCKER_FRONTEND_IMAGE: temporalparadox/yantrix-editor-frontend:deploy_dgocean
+  DOCKER_BACKEND_CONTAINER: yantrix_editor_backend
+  DOCKER_FRONTEND_CONTAINER: yantrix_editor_frontend
+  DOCKER_BACKEND_HOST_PORT: 3000
+  DOCKER_BACKEND_CONTAINER_PORT: 3000
+  DOCKER_FRONTEND_HOST_POST: 8888
+  DOCKER_FRONTEND_CONTAINER_PORT: 8888
+
+jobs:
+  
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Log in to Docker Hub
+      uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build and push Docker image (Backend)
+      uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: ${{ env.DOCKER_BACKEND_IMAGE }}
+
+    - name: Build and push Docker image (Frontend)
+      uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: ${{ env.DOCKER_FRONTEND_IMAGE }}
+  
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Stop existing containers
+      uses: appleboy/ssh-action@v0.1.10
+      if: ${{ success() || failure() }}
+      with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          script: sudo docker stop ${{ env.DOCKER_BACKEND_CONTAINER }} ${{ env.DOCKER_FRONTEND_CONTAINER }}
+
+    - name: Delete old containers
+      uses: appleboy/ssh-action@v0.1.10
+      if: ${{ success() || failure() }}
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        key: ${{ secrets.SERVER_PRIVATE_KEY }}
+        script: sudo docker rm ${{ env.DOCKER_BACKEND_CONTAINER }} ${{ env.DOCKER_FRONTEND_CONTAINER }}
+
+    - name: Delete old images
+      uses: appleboy/ssh-action@v0.1.10
+      if: ${{ success() || failure() }}
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        key: ${{ secrets.SERVER_PRIVATE_KEY }}
+        script: sudo docker rmi ${{ env.DOCKER_BACKEND_IMAGE }} ${{ env.DOCKER_FRONTEND_IMAGE }}
+
+    - name: Create new container with updated image (backend)
+      uses: appleboy/ssh-action@v0.1.10
+      if: ${{ success() || failure() }}
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        key: ${{ secrets.SERVER_PRIVATE_KEY }}
+        script: >
+        sudo docker run 
+        -p ${{ env.DOCKER_BACKEND_HOST_PORT }}:${{ env.DOCKER_BACKEND_CONTAINER_PORT }} 
+        -P 
+        --name ${{ env.DOCKER_BACKEND_CONTAINER_NAME }} 
+        -d 
+        ${{ env.DOCKER_BACKEND_IMAGE }}
+    
+    - name: Create new container with updated image (frontend)
+      uses: appleboy/ssh-action@v0.1.10
+      if: ${{ success() || failure() }}
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        key: ${{ secrets.SERVER_PRIVATE_KEY }}
+        script: >
+        sudo docker run 
+        -p ${{ env.DOCKER_FRONTEND_HOST_PORT }}:${{ env.DOCKER_FRONTEND_CONTAINER_PORT }} 
+        -P 
+        --name ${{ env.DOCKER_FRONTEND_CONTAINER_NAME }} 
+        -d 
+        ${{ env.DOCKER_FRONTEND_IMAGE }}
