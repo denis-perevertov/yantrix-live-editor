@@ -93,13 +93,13 @@ jobs:
         username: ${{ secrets.SERVER_USERNAME }}
         password: ${{ secrets.SERVER_PASSWORD }}
         key: ${{ secrets.SERVER_PRIVATE_KEY }}
-        script: >
-        sudo docker run 
-        -p ${{ env.DOCKER_BACKEND_HOST_PORT }}:${{ env.DOCKER_BACKEND_CONTAINER_PORT }} 
-        -P 
-        --name ${{ env.DOCKER_BACKEND_CONTAINER_NAME }} 
-        -d 
-        ${{ env.DOCKER_BACKEND_IMAGE }}
+        script: |
+          sudo docker run 
+          -p ${{ env.DOCKER_BACKEND_HOST_PORT }}:${{ env.DOCKER_BACKEND_CONTAINER_PORT }} 
+          -P 
+          --name ${{ env.DOCKER_BACKEND_CONTAINER_NAME }} 
+          -d 
+          ${{ env.DOCKER_BACKEND_IMAGE }}
     
     - name: Create new container with updated image (frontend)
       uses: appleboy/ssh-action@v0.1.10
@@ -109,10 +109,10 @@ jobs:
         username: ${{ secrets.SERVER_USERNAME }}
         password: ${{ secrets.SERVER_PASSWORD }}
         key: ${{ secrets.SERVER_PRIVATE_KEY }}
-        script: >
-        sudo docker run 
-        -p ${{ env.DOCKER_FRONTEND_HOST_PORT }}:${{ env.DOCKER_FRONTEND_CONTAINER_PORT }} 
-        -P 
-        --name ${{ env.DOCKER_FRONTEND_CONTAINER_NAME }} 
-        -d 
-        ${{ env.DOCKER_FRONTEND_IMAGE }}
+        script: |
+          sudo docker run 
+          -p ${{ env.DOCKER_FRONTEND_HOST_PORT }}:${{ env.DOCKER_FRONTEND_CONTAINER_PORT }} 
+          -P 
+          --name ${{ env.DOCKER_FRONTEND_CONTAINER_NAME }} 
+          -d 
+          ${{ env.DOCKER_FRONTEND_IMAGE }}
