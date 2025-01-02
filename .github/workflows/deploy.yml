@@ -9,8 +9,8 @@ on:
 env:
   DOCKER_BACKEND_IMAGE: temporalparadox/yantrix-editor-backend:deploy_dgocean
   DOCKER_FRONTEND_IMAGE: temporalparadox/yantrix-editor-frontend:deploy_dgocean
-  DOCKER_BACKEND_CONTAINER: yantrix_editor_backend
-  DOCKER_FRONTEND_CONTAINER: yantrix_editor_frontend
+  DOCKER_BACKEND_CONTAINER_NAME: yantrix_editor_backend
+  DOCKER_FRONTEND_CONTAINER_NAME: yantrix_editor_frontend
   DOCKER_BACKEND_HOST_PORT: 3000
   DOCKER_BACKEND_CONTAINER_PORT: 3000
   DOCKER_FRONTEND_HOST_POST: 8888
