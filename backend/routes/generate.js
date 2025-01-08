@@ -7,7 +7,7 @@ const { generateAutomata } = require('../api/generateAutomata');
 
 router.post('/', async (req, res) => {
     const { diagramText } = req.body;
-    if (!diagramText) res.status(400).json({ files: [], errorText: 'No diagram text found!', steps: null, timestamp: generationResult.timestamp });
+    if (!diagramText) res.status(400).json({ files: [], errorText: 'No diagram text found!', steps: null, timestamp: new Date() });
     
     const generationResult = await generateAutomata(diagramText);
 
