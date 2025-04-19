@@ -9,7 +9,7 @@ export const MainView = () => {
     const [editorText, setEditorText] = useState('');
     const [diagramText, setDiagramText] = useState('');
     const [autoSyncEnabled, setAutoSyncEnabled] = useState(true);
-    const [editorIsActive, setEditorIsActive] = useState(true);
+    const [editorIsActive, setEditorIsActive] = useState(false);
 
     const toggleAutoSync = () => {
         setAutoSyncEnabled(prev => !prev);

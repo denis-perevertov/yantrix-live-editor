@@ -4,14 +4,17 @@ import { useEffect, useState } from "react"
 import { CodeView } from "./CodeView";
 import { BsCodeSquare } from "react-icons/bs";
 import { BsDiagram3Fill } from "react-icons/bs";
+import { FaCircleNodes } from "react-icons/fa6";
 import { RiLoader4Line } from "react-icons/ri";
 import { TfiWrite } from "react-icons/tfi";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
+import { NodeEditorView } from "./NodeEditorView";
 
 
 const ViewSelector = {
     DIAGRAM: 'diagram',
-    CODE: 'code'
+    CODE: 'code',
+    INTERACTIVE_EDITOR: 'editor'
 };
 
 // todo env
@@ -31,17 +34,19 @@ const generateYantrixAutomata = (text) => {
 
 export const AutomataView = ({ diagramText, editorIsActive, toggleEditor }) => {
 
-    const [activeView, setActiveView] = useState(ViewSelector.DIAGRAM);
+    const [activeView, setActiveView] = useState(ViewSelector.INTERACTIVE_EDITOR);
     const [updateInProgress, setUpdateInProgress] = useState(false);
 
     const [updatedViews, setUpdatedViews] = useState({
         [ViewSelector.DIAGRAM]: false,
-        [ViewSelector.CODE]: false
+        [ViewSelector.CODE]: false,
+        [ViewSelector.INTERACTIVE_EDITOR]: false,
     });
 
     const [errorViews, setErrorViews] = useState({
         [ViewSelector.DIAGRAM]: false,
-        [ViewSelector.CODE]: false
+        [ViewSelector.CODE]: false,
+        [ViewSelector.INTERACTIVE_EDITOR]: false,
     })
 
     const [generatedFiles, setGeneratedFiles] = useState(null);
@@ -59,6 +64,14 @@ export const AutomataView = ({ diagramText, editorIsActive, toggleEditor }) => {
         setUpdatedViews(prev => ({
             ...prev,
             [ViewSelector.CODE]: false
+        }))
+    }
+
+    const enableInteractiveEditorView = () => {
+        setActiveView(ViewSelector.INTERACTIVE_EDITOR);
+        setUpdatedViews(prev => ({
+            ...prev,
+            [ViewSelector.INTERACTIVE_EDITOR]: false
         }))
     }
 
@@ -95,7 +108,7 @@ export const AutomataView = ({ diagramText, editorIsActive, toggleEditor }) => {
     }, [diagramText])
 
     return (
-        <div className="view grow h-full">
+        <div className="view grow h-full flex flex-col">
             {updateInProgress && <div className="absolute z-10 w-full h-full bg-black/70 animation-fade-in flex gap-3 justify-center items-center transition duration-500 select-none">
                 <RiLoader4Line className="animate-spin text-5xl text-white/60"/>
                 <h1 className="text-3xl text-white">Updating...</h1>
@@ -128,11 +141,18 @@ export const AutomataView = ({ diagramText, editorIsActive, toggleEditor }) => {
                         <BsCodeSquare />
                         Automata Code
                     </Button>
+                    <Button className="select-none transition relative" disabled={activeView === ViewSelector.INTERACTIVE_EDITOR} onClick={enableInteractiveEditorView}>
+                        <FaCircleNodes />
+                        Interactive Editor
+                    </Button>
                 </div>
                 <div></div>
             </nav>
-            {activeView === ViewSelector.DIAGRAM && <MermaidDiagram text={diagramText} />}
-            {activeView === ViewSelector.CODE && <div className="h-[calc(100%-56px)]"><CodeView generatedFiles={generatedFiles} /></div> }
+            <div className="selected-view grow">
+                {activeView === ViewSelector.DIAGRAM && <MermaidDiagram text={diagramText} />}
+                {activeView === ViewSelector.CODE && <div className="h-[calc(100%-56px)]"><CodeView generatedFiles={generatedFiles} /></div>}
+                {activeView === ViewSelector.INTERACTIVE_EDITOR && <NodeEditorView />}
+            </div>
         </div>
     )
 }
